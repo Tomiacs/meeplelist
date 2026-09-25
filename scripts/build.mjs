@@ -11,5 +11,7 @@ if (!Array.isArray(catalog.games) || catalog.games.length < 100 || !catalog.upda
 }
 await rm(target, { recursive: true, force: true });
 await mkdir(target, { recursive: true });
-await cp(source, target, { recursive: true });
+await cp(path.join(root, "index.html"), path.join(target, "index.html"));
+await cp(path.join(root, ".nojekyll"), path.join(target, ".nojekyll"));
+await cp(source, path.join(target, "site"), { recursive: true });
 console.log(`GitHub Pages csomag kész: ${catalog.games.length} játék.`);
