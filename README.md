@@ -23,7 +23,7 @@ A `dist/` könyvtár a kész statikus oldal. Helyi megnyitáshoz futtasd az `npm
 
 ## GitHub Pages
 
-A `.github/workflows/pages.yml` workflow a `main` ágra érkező push után publikálja az oldalt. A repository **Settings → Pages → Build and deployment → Source** értékét állítsd **GitHub Actions**-ra. A várható cím: `https://tomiacs.github.io/meeplelist/`.
+A `.github/workflows/pages.yml` workflow a `main` ágra érkező push után publikálja az oldalt. Az új repositoryban először a **Settings → Pages → Build and deployment → Source** értékét állítsd **GitHub Actions**-ra. Ezután az **Actions → Publish MeepleList** oldalon indítsd újra a korábbi sikertelen futást, vagy használd a **Run workflow** gombot. A várható cím: `https://tomiacs.github.io/meeplelist/`.
 
 A repó tartalmaz egy 2026. szeptember 25-én, élő BGG API-lekérdezéssel frissített adatpillanatképet, így token nélkül is megjelenik a lista. A frissítéshez hozz létre egy `BGG_API_TOKEN` nevű **repository secretet** a **Settings → Secrets and variables → Actions** oldalon. A workflow ekkor pushkor és hétfőnként újra lekéri a 200 jelölt adatait a BGG XML API2-ből. A token csak az Actions futás környezeti változójaként szerepel, a közzétett fájlokba és a böngészőbe nem kerül be.
 
