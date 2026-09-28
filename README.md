@@ -7,7 +7,8 @@ Statikus, magyar nyelvű társasjáték-ajánló [BoardGameGeek](https://boardga
 - 1–12 játékoshoz top 10/20/30/50 lista, játékidő és összetettség szerinti szűrővel.
 - BGG-rang, átlagos értékelés, játékosszám, játékidő, összetettség, értékelésszám és a pontos létszámra leadott ajánlási szavazatok.
 - A sorrend a BGG Bayes-átlag és az adott létszámhoz tartozó szavazatok súlyozott összegéből készül. Ez a MeepleList ajánlási sorrendje, nem a BGG hivatalos rangsora.
-- A katalógus 200 előre kiválasztott, magasra rangsorolt jelöltből áll. Nagyobb létszámra kevesebb találat lehet.
+- A katalógus a BGG hivatalos ranglista-exportjából kiválasztott 1000 jelöltből áll. Nagyobb létszámra kevesebb találat lehet.
+- Az oldal a katalógus utolsó frissítésének dátumát és időpontját is mutatja.
 
 ## Helyi futtatás
 
@@ -25,9 +26,17 @@ A `dist/` könyvtár a kész statikus oldal. Helyi megnyitáshoz futtasd az `npm
 
 A GitHub Pages forrása a `main` ág **/(root)** mappája legyen (**Settings → Pages → Deploy from a branch**). A gyökérben lévő `index.html` közvetlenül betölti az alkalmazást, így nincs szükség külön mappa kiválasztására. A cím: `https://tomiacs.github.io/meeplelist/`.
 
-A repó tartalmaz egy 2026. szeptember 25-én, élő BGG API-lekérdezéssel frissített adatpillanatképet, így token nélkül is megjelenik a lista. A frissítéshez hozz létre egy `BGG_API_TOKEN` nevű **repository secretet** a **Settings → Secrets and variables → Actions** oldalon. A workflow ekkor hétfőnként újra lekéri a 200 jelölt adatait a BGG XML API2-ből, frissíti a `main` ágon a JSON-t, és új Pages-buildet kér. A token csak az Actions futás környezeti változójaként szerepel, a közzétett fájlokba és a böngészőbe nem kerül be.
+A repó tartalmaz egy élő BGG API-lekérdezéssel frissített adatpillanatképet, így token nélkül is megjelenik a lista. A frissítéshez hozz létre egy `BGG_API_TOKEN` nevű **repository secretet** a **Settings → Secrets and variables → Actions** oldalon. A workflow ekkor hétfőnként újra lekéri az 1000 jelölt adatait a BGG XML API2-ből, frissíti a `main` ágon a JSON-t, és új Pages-buildet kér. A token csak az Actions futás környezeti változójaként szerepel, a közzétett fájlokba és a böngészőbe nem kerül be.
 
-A frissítés helyben is futtatható, ha a `BGG_API_TOKEN` környezeti változót beállítod:
+Az automatikus frissítés a már kiválasztott 1000 játék adatait kéri le; az időközben Top 1000-be kerülő új játékokhoz friss [BGG ranglista-CSV](https://boardgamegeek.com/data_dumps/bg_ranks) szükséges. A kicsomagolt CSV útvonalát add át a helyi frissítésnek:
+
+```powershell
+./scripts/update-data-local.ps1 -RankCsvPath 'C:\adatok\boardgames_ranks.csv'
+```
+
+Ez a parancs az 1000 legjobb rangú játék azonosítóját választja ki a CSV-ből, majd a részletes adatokat a BGG XML API2-n keresztül tölti le. Nem teszi közzé a helyi API-kulcsot.
+
+A kiválasztott 1000 játék részletes adatai helyben is frissíthetők, ha a `BGG_API_TOKEN` környezeti változót beállítod:
 
 ```sh
 npm run update:data

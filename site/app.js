@@ -12,7 +12,9 @@ const stamp = document.querySelector("#data-stamp");
 
 const ratingFormat = new Intl.NumberFormat("hu-HU", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const integerFormat = new Intl.NumberFormat("hu-HU");
-const dateFormat = new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+const dateFormat = new Intl.DateTimeFormat("hu-HU", {
+  dateStyle: "long", timeStyle: "short", timeZone: "Europe/Budapest"
+});
 
 for (let players = 1; players <= 12; players += 1) {
   playersSelect.add(new Option(`${players} fő`, String(players)));
@@ -66,7 +68,8 @@ function render() {
   title.textContent = results.length
     ? `Top ${results.length} játék ${filters.players} főre`
     : `Nincs találat ${filters.players} főre`;
-  stamp.textContent = `BGG-adatok: ${dateFormat.format(new Date(catalog.updatedAt))}`;
+  stamp.dateTime = catalog.updatedAt;
+  stamp.textContent = `Adatbázis frissítve: ${dateFormat.format(new Date(catalog.updatedAt))}`;
   list.replaceChildren(...results.map((result, index) => createCard(result, index)));
   status.textContent = results.length
     ? `${results.length} játék a ${catalog.games.length} vizsgált jelöltből.`

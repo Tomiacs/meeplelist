@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseGames } from "./bgg-xml.mjs";
 import { publicCatalog } from "./catalog.mjs";
+import { topRankedIds } from "./rank-csv.mjs";
 
 const token = process.env.BGG_API_TOKEN;
 if (!token) throw new Error("Hiányzik a BGG_API_TOKEN környezeti változó.");
@@ -10,8 +11,13 @@ if (!token) throw new Error("Hiányzik a BGG_API_TOKEN környezeti változó.");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const catalogPath = path.join(root, "site", "data", "catalog.json");
 const existing = JSON.parse(await readFile(catalogPath, "utf8"));
-const ids = [...new Set(existing.games.map((game) => game.id))];
-if (ids.length < 100) throw new Error("Túl rövid a meglévő jelöltlista.");
+const rankCsvPath = process.argv[2];
+const ids = rankCsvPath
+  ? topRankedIds(await readFile(path.resolve(rankCsvPath), "utf8"))
+  : [...new Set(existing.games.map((game) => game.id))];
+if (ids.length !== 1000) {
+  throw new Error("Pontosan 1000 játékazonosító szükséges; az első bővítéshez add meg a BGG ranglista-CSV útvonalát.");
+}
 
 const batches = [];
 for (let index = 0; index < ids.length; index += 20) batches.push(ids.slice(index, index + 20));
@@ -22,14 +28,14 @@ for (const [index, batch] of batches.entries()) {
   const url = `https://boardgamegeek.com/xmlapi2/thing?id=${batch.join(",")}&stats=1`;
   const xml = await getXml(url);
   const parsed = parseGames(xml);
-  if (!parsed.length) throw new Error(`A BGG nem adott játékokat a(z) ${index + 1}. csomagra.`);
+  if (parsed.length !== batch.length || new Set(parsed.map((game) => game.id)).size !== batch.length ||
+      parsed.some((game) => !batch.includes(game.id))) {
+    throw new Error(`A BGG hiányos vagy nem várt játékokat adott a(z) ${index + 1}. csomagra; a korábbi adatfájl megmaradt.`);
+  }
   games.push(...parsed);
   console.log(`BGG csomag ${index + 1}/${batches.length}: ${parsed.length} játék.`);
 }
 
-if (games.length < Math.ceil(ids.length * 0.9)) {
-  throw new Error("A BGG túl kevés játékot adott vissza; a korábbi adatfájl megmaradt.");
-}
 const catalog = publicCatalog(games, new Date());
 await writeFile(catalogPath, JSON.stringify(catalog) + "\n", "utf8");
 console.log(`Frissítve: ${catalog.games.length} játék.`);

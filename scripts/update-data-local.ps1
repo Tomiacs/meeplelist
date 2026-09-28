@@ -1,3 +1,5 @@
+param([string]$RankCsvPath)
+
 $ErrorActionPreference = 'Stop'
 
 $secretPath = Join-Path $env:LOCALAPPDATA 'CodexSecrets\bgg-api-token.dpapi'
@@ -10,7 +12,9 @@ $credential = [pscredential]::new('bgg', $secureKey)
 
 try {
     $env:BGG_API_TOKEN = $credential.GetNetworkCredential().Password
-    node (Join-Path $PSScriptRoot 'update-data.mjs')
+    $arguments = @((Join-Path $PSScriptRoot 'update-data.mjs'))
+    if ($RankCsvPath) { $arguments += $RankCsvPath }
+    node @arguments
     if ($LASTEXITCODE -ne 0) {
         throw 'A BGG adatfrissítés sikertelen.'
     }
